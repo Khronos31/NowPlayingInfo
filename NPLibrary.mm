@@ -57,4 +57,10 @@ static CFDataRef nowPlayingInfo(CFStringRef key) {
   return nowPlayingArtwork;
 }
 
++ (NSString *)artworkType {
+  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoArtworkMIMEType);
+  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
+  return (NSString *)data;
+}
+
 @end

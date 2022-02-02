@@ -38,7 +38,8 @@ static CFDataRef messageCallback(CFMessagePortRef port, SInt32 msgid, CFDataRef 
           if (value) {
             if (kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoTitle, 0) ||
                 kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoAlbum, 0) ||
-                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtist, 0)) {
+                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtist, 0) ||
+                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtworkMIMEType, 0)) {
               data = CFStringCreateExternalRepresentation(NULL, (CFStringRef)value, kCFStringEncodingUTF16BE, '\0');
             } else if (kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtworkData, 0)) {
               data = (CFDataRef)value;

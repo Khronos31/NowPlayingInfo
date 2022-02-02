@@ -6,6 +6,21 @@
 #define MACH_PORT_NAME "com.khronos31.nowplayinginfo"
 
 static CFDataRef messageCallback(CFMessagePortRef port, SInt32 msgid, CFDataRef cfData, void *info) {
+  __block Boolean isPlaying = false;
+  dispatch_semaphore_t semaphore1 = dispatch_semaphore_create(0);
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    MRMediaRemoteGetNowPlayingApplicationIsPlaying(dispatch_get_main_queue(), ^(Boolean arg) {
+      isPlaying = arg;
+    });
+    dispatch_semaphore_signal(semaphore1);
+  });
+  while (dispatch_semaphore_wait(semaphore1, DISPATCH_TIME_NOW)) {
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01f]];
+  }
+  if (!isPlaying) {
+    return nil;
+  }
+
   CFStringRef key = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
   __block CFDataRef data = nil;
   if (kCFCompareEqualTo == CFStringCompare(key, CFSTR("nowPlayingApplication"), 0)){

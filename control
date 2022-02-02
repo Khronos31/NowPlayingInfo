@@ -1,0 +1,9 @@
+Package: com.khronos31.nowplaying
+Name: NowPlayingInfo
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Get NowPlaying information from command line.
+Maintainer: Khronos31
+Author: Khronos31
+Section: Libraries
+Depends: mobilesubstrate (>= 0.9.5000), com.rpetrich.rocketbootstrap (>= 1.0.9)

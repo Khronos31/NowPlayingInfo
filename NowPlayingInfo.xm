@@ -1,7 +1,6 @@
 #import <MediaRemote/MediaRemote.h>
 #import <SpringBoard/SBMediaController.h>
 #import <SpringBoard/SBApplication.h>
-#import <RemoteLog.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
 #define MACH_PORT_NAME "com.khronos31.nowplayinginfo"

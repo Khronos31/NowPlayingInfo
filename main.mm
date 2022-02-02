@@ -1,4 +1,3 @@
-#import <Foundation/Foundation.h>
 #import "NowPlayingInfo.h"
 
 void print_usage(int argc, char *argv[], char *envp[]) {

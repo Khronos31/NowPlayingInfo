@@ -1,3 +1,5 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import <MediaRemote/MediaRemote.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 #import "NowPlayingInfo.h"
@@ -64,3 +66,32 @@ static CFDataRef nowPlayingInfo(CFStringRef key) {
 }
 
 @end
+
+const char *nowPlayingApplication() {
+  return [NowPlayingInfo nowPlayingApplication].UTF8String;
+}
+
+const char *nowPlayingTitle() {
+  return [NowPlayingInfo title].UTF8String;
+}
+
+const char *nowPlayingArtist() {
+  return [NowPlayingInfo artist].UTF8String;
+}
+
+const char *nowPlayingAlbum() {
+  return [NowPlayingInfo album].UTF8String;
+}
+
+/*
+// うまく動かないので保留
+unsigned long nowPlayingArtwork(char buffer[]) {
+  NSData *data = UIImagePNGRepresentation([NowPlayingInfo artwork]);
+  [data getBytes:buffer length:data.length];
+  return data.length;
+}
+*/
+
+const char *nowPlayingArtworkType() {
+  return [NowPlayingInfo artworkType].UTF8String;
+}

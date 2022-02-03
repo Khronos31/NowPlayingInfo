@@ -13,13 +13,13 @@ $(TWEAK_NAME)_LDFLAGS = -lrocketbootstrap
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = MediaRemote
 
 LIBRARY_NAME = libnowplaying
-$(LIBRARY_NAME)_FILES = NPLibrary.mm
+$(LIBRARY_NAME)_FILES = NPLibrary.m
 $(LIBRARY_NAME)_LDFLAGS = -lrocketbootstrap
 $(LIBRARY_NAME)_PRIVATE_FRAMEWORKS = MediaRemote
 $(LIBRARY_NAME)_INSTALL_PATH = /usr/local/lib
 
 TOOL_NAME = nowplaying
-$(TOOL_NAME)_FILES = main.mm
+$(TOOL_NAME)_FILES = main.m
 $(TOOL_NAME)_LDFLAGS = -lnowplaying
 $(TOOL_NAME)_INSTALL_PATH = /usr/local/bin
 

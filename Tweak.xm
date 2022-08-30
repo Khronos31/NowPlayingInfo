@@ -57,8 +57,12 @@ static CFDataRef messageCallback(CFMessagePortRef port, SInt32 msgid, CFDataRef 
 }
 
 %ctor {
-  static CFMessagePortRef localPort = CFMessagePortCreateLocal(NULL, CFSTR(MACH_PORT_NAME), messageCallback, nil, NULL);
-  CFRunLoopSourceRef runLoopSource = CFMessagePortCreateRunLoopSource(nil, localPort, 0);
-  CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
-  rocketbootstrap_cfmessageportexposelocal(localPort);
+  CPDistributedMessagingCenter * messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
+  rocketbootstrap_distributedmessagingcenter_apply(messagingCenter);
+  [messagingCenter runServerOnCurrentThread];
+  [messagingCenter registerForMessageName:@"getNowPlayingInfo" target:self selector:@selector(getNowPlayingInfo)];
+
+  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.khronos31.nowplayinginfo.plist"];
+  if (!prefs) prefs = [[NSMutableDictionary alloc] init];
 }
+

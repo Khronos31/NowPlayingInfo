@@ -1,68 +1,75 @@
 #import <MediaRemote/MediaRemote.h>
 #import <SpringBoard/SBApplication.h>
-#import <SpringBoard/SBMediaController.h>
+#import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
-#define MACH_PORT_NAME "com.khronos31.nowplayinginfo"
+#define LOG_PATH @"/var/mobile/Library/nplog/log.plist"
 
-static CFDataRef messageCallback(CFMessagePortRef port, SInt32 msgid, CFDataRef cfData, void *info) {
-  __block Boolean isPlaying = false;
-  dispatch_semaphore_t semaphore1 = dispatch_semaphore_create(0);
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-    MRMediaRemoteGetNowPlayingApplicationIsPlaying(dispatch_get_main_queue(), ^(Boolean arg) {
-      isPlaying = arg;
-    });
-    dispatch_semaphore_signal(semaphore1);
+@interface SBMediaController
+@property (retain) NSDictionary *currentPlayingInfo;
++ (id)sharedInstance;
+- (id/*SBApplication **/)nowPlayingApplication;
+- (void)setNowPlayingInfo:(NSDictionary *)arg1;
+- (BOOL)isPlaying;
+@end
+
+%hook SBMediaController
+%property (retain) NSDictionary *currentPlayingInfo;
+
+- (void)setNowPlayingInfo:(NSDictionary *)arg1 {
+  %orig;
+
+  MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef nowPlayingInfo) {
+    if (self.currentPlayingInfo) [self.currentPlayingInfo release];
+    self.currentPlayingInfo = [(__bridge NSDictionary *)nowPlayingInfo copy];
   });
-  while (dispatch_semaphore_wait(semaphore1, DISPATCH_TIME_NOW)) {
-    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01f]];
-  }
-  if (!isPlaying) {
-    return nil;
-  }
 
-  CFStringRef key = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  __block CFDataRef data = nil;
-  if (kCFCompareEqualTo == CFStringCompare(key, CFSTR("nowPlayingApplication"), 0)){
-    SBApplication *app = [[%c(SBMediaController) sharedInstance] nowPlayingApplication];
-    if (app) {
-      CFStringRef str = (__bridge CFStringRef)[app displayName];
-      data = CFStringCreateExternalRepresentation(NULL, str, kCFStringEncodingUTF16BE, '\0');
-    }
-  } else {
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-      MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef information) {
-        if (information) {
-          const void *value = CFDictionaryGetValue(information, key);
-          if (value) {
-            if (kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoTitle, 0) ||
-                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoAlbum, 0) ||
-                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtist, 0) ||
-                kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtworkMIMEType, 0)) {
-              data = CFStringCreateExternalRepresentation(NULL, (CFStringRef)value, kCFStringEncodingUTF16BE, '\0');
-            } else if (kCFCompareEqualTo == CFStringCompare(key, kMRMediaRemoteNowPlayingInfoArtworkData, 0)) {
-              data = (CFDataRef)value;
-            }
-          }
-        }
-      });
-      dispatch_semaphore_signal(semaphore);
-    });
-    while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
-      [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1f]];
-    }
-  }
-  return data;
+  NSURL *url = [NSURL fileURLWithPath:LOG_PATH];
+  [self.currentPlayingInfo writeToURL:url error:nil];
 }
 
-%ctor {
-  CPDistributedMessagingCenter * messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
+%end
+
+%hook SpringBoard
+- (void)applicationDidFinishLaunching:(id)application {
+  %orig;
+
+  CPDistributedMessagingCenter *messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
   rocketbootstrap_distributedmessagingcenter_apply(messagingCenter);
   [messagingCenter runServerOnCurrentThread];
-  [messagingCenter registerForMessageName:@"getNowPlayingInfo" target:self selector:@selector(getNowPlayingInfo)];
+  [messagingCenter registerForMessageName:@"nowPlayingInfo" target:self selector:@selector(nowPlayingInfo)];
+  [messagingCenter registerForMessageName:@"nowPlayingApplication" target:self selector:@selector(nowPlayingApplication)];
+  [messagingCenter registerForMessageName:@"isPlaying" target:self selector:@selector(isPlaying)];
 
-  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.khronos31.nowplayinginfo.plist"];
+  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preference/com.khronos31.nowplayinginfo.plist"];
   if (!prefs) prefs = [[NSMutableDictionary alloc] init];
 }
 
+%new
+- (NSDictionary *)nowPlayingInfo {
+  return [[%c(SBMediaController) sharedInstance] currentPlayingInfo];
+}
+
+%new
+- (NSDictionary *)nowPlayingApplication {
+  SBApplication *app = [[%c(SBMediaController) sharedInstance] nowPlayingApplication];
+  if (app) {
+    return @{
+      @"bundleIdentifier": app.bundleIdentifier,
+      @"displayName": app.displayName
+    };
+  } else {
+    return nil;
+  }
+}
+
+%new
+- (NSDictionary *)isPlaying {
+  if ([[%c(SBMediaController) sharedInstance] isPlaying]) {
+    return @{};
+  } else {
+    return nil;
+  }
+}
+
+%end

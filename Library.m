@@ -1,97 +1,98 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <MediaRemote/MediaRemote.h>
+#import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 #import "NowPlayingInfo.h"
 
-#define MACH_PORT_NAME "com.khronos31.nowplayinginfo"
-
-static CFMessagePortRef messagePort = nil;
-
-static CFDataRef nowPlayingInfo(CFStringRef key) {
-  if (messagePort && !CFMessagePortIsValid(messagePort)) {
-    CFRelease(messagePort);
-    messagePort = nil;
-  }
-  if (!messagePort) {
-    messagePort = rocketbootstrap_cfmessageportcreateremote(NULL, CFSTR(MACH_PORT_NAME));
-  }
-  if (!messagePort || !CFMessagePortIsValid(messagePort)) {
-    NSLog(@"NP Error: MessagePort is invalid");
-    return 0; //kCFMessagePortIsInvalid;
-  }
-  CFDataRef cfData = CFStringCreateExternalRepresentation(NULL, key, kCFStringEncodingUTF16BE, '\0');
-  CFDataRef rData = nil;
-  CFMessagePortSendRequest(messagePort, 1/*type*/, cfData, 5, 5, kCFRunLoopDefaultMode, &rData);
-  return rData;
-}
+static CPDistributedMessagingCenter *messagingCenter;
 
 @implementation NowPlayingInfo
 
-+ (NSString *)nowPlayingApplication {
-  CFDataRef cfData = nowPlayingInfo(CFSTR("nowPlayingApplication"));
-  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  return (NSString *)data;
++ (NowPlayingInfo *)sharedInstance {
+  static NowPlayingInfo *sharedInstance;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    sharedInstance = [[self alloc] init];
+    messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
+    rocketbootstrap_distributedmessagingcenter_apply(messagingCenter);
+  });
+  return sharedInstance;
 }
 
-+ (NSString *)title {
-  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoTitle);
-  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  return (NSString *)data;
+- (BOOL)isPlaying {
+  if ([messagingCenter sendMessageAndReceiveReplyName:@"isPlaying" userInfo:nil]) {
+    return YES;
+  } else {
+    return NO;
+  }
 }
 
-+ (NSString *)artist {
-  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoArtist);
-  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  return (NSString *)data;
+- (NSDictionary *)nowPlayingInfo {
+  return [messagingCenter sendMessageAndReceiveReplyName:@"nowPlayingInfo" userInfo:nil];
 }
 
-+ (NSString *)album {
-  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoAlbum);
-  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  return (NSString *)data;
+- (NSDictionary *)nowPlayingApplication {
+  return [messagingCenter sendMessageAndReceiveReplyName:@"nowPlayingApplication" userInfo:nil]; 
 }
 
-+ (UIImage *)artwork {
-  UIImage *nowPlayingArtwork = [[UIImage alloc] init];
-  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoArtworkData);
-  nowPlayingArtwork = [UIImage imageWithData:(NSData *)cfData];
-  return nowPlayingArtwork;
+- (NSString *)title {
+  return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoTitle"];
 }
 
-+ (NSString *)artworkType {
-  CFDataRef cfData = nowPlayingInfo(kMRMediaRemoteNowPlayingInfoArtworkMIMEType);
-  CFStringRef data = CFStringCreateFromExternalRepresentation(NULL, cfData, kCFStringEncodingUTF16BE);
-  return (NSString *)data;
+- (NSString *)artist {
+  return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtist"];
+}
+
+- (NSString *)album {
+  return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoAlbum"];
+}
+
+- (UIImage *)artwork {
+  return [UIImage imageWithData:self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkData"]];
+}
+
+- (NSString *)artworkType {
+  return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkMIMEType"];
 }
 
 @end
 
-const char *nowPlayingApplication() {
-  return [NowPlayingInfo nowPlayingApplication].UTF8String;
+bool isPlaying() {
+  return [NowPlayingInfo sharedInstance].isPlaying;
 }
 
-const char *nowPlayingTitle() {
-  return [NowPlayingInfo title].UTF8String;
+CFDictionaryRef nowPlayingInfo() {
+  NSDictionary *npInfo = [NowPlayingInfo sharedInstance].nowPlayingInfo;
+  return (CFDictionaryRef)CFBridgingRetain(npInfo);
 }
 
-const char *nowPlayingArtist() {
-  return [NowPlayingInfo artist].UTF8String;
+CFDictionaryRef nowPlayingApplication() {
+  NSDictionary *npApp = [NowPlayingInfo sharedInstance].nowPlayingApplication;
+  return (CFDictionaryRef)CFBridgingRetain(npApp);
 }
 
-const char *nowPlayingAlbum() {
-  return [NowPlayingInfo album].UTF8String;
+CFStringRef nowPlayingTitle() {
+  NSString *npTitle = [NowPlayingInfo sharedInstance].title;
+  return (CFStringRef)CFBridgingRetain(npTitle);
 }
 
-/*
-// うまく動かないので保留
-unsigned long nowPlayingArtwork(char buffer[]) {
-  NSData *data = UIImagePNGRepresentation([NowPlayingInfo artwork]);
-  [data getBytes:buffer length:data.length];
-  return data.length;
+CFStringRef nowPlayingArtist() {
+  NSString *npArtist = [NowPlayingInfo sharedInstance].artist;
+  return (CFStringRef)CFBridgingRetain(npArtist);
 }
-*/
 
-const char *nowPlayingArtworkType() {
-  return [NowPlayingInfo artworkType].UTF8String;
+CFStringRef nowPlayingAlbum() {
+  NSString *npAlbum = [NowPlayingInfo sharedInstance].album;
+  return (CFStringRef)CFBridgingRetain(npAlbum);
+}
+
+CFDataRef nowPlayingArtwork() {
+  NSData *npArtwork = [NowPlayingInfo sharedInstance].nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkData"];
+  return (CFDataRef)CFBridgingRetain(npArtwork);
+}
+
+CFStringRef nowPlayingArtworkType() {
+  NSString *npArtworkType = [NowPlayingInfo sharedInstance].artworkType;
+  return (CFStringRef)CFBridgingRetain(npArtworkType);
 }

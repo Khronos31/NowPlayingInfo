@@ -6,10 +6,12 @@ void print_usage(int argc, char *argv[], char *envp[]) {
 }
 
 int main(int argc, char *argv[], char *envp[]) {
+  /*
   const char *title = [NowPlayingInfo title].UTF8String;
   const char *artist = [NowPlayingInfo artist].UTF8String;
   const char *album = [NowPlayingInfo album].UTF8String;
   const char *playingApp = [NowPlayingInfo nowPlayingApplication].UTF8String;
-  printf("Title: %s\nArtist: %s\nAlbum: %s\nPlayingApp: %s\n", title, artist, album, playingApp);
+  */
+  //printf("Title: %s\nArtist: %s\nAlbum: %s\nPlayingApp: %s\n", title, artist, album, playingApp);
   return 0;
 }

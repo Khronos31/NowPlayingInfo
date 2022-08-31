@@ -3,7 +3,10 @@
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
-#define LOG_PATH @"/var/mobile/Library/nplog/log.plist"
+#define NOWPLAYINGINFO_DIR @"/var/mobile/Library/NowPlayingInfo"
+#define HIST_DIR NOWPLAYINGINFO_DIR @"/history"
+#define LATEST_PLAYED NOWPLAYINGINFO_DIR @"/latest.plist"
+#define PREF_PATH @"/var/mobile/Library/Preference/com.khronos31.nowplaying.plist"
 
 @interface SBMediaController
 @property (retain) NSDictionary *currentPlayingInfo;
@@ -19,13 +22,19 @@
 - (void)setNowPlayingInfo:(NSDictionary *)arg1 {
   %orig;
 
+  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:PREF_PATH];
+  if (!prefs) {
+    prefs = [[NSMutableDictionary alloc] init];
+  }
+
   MRMediaRemoteGetNowPlayingInfo(dispatch_get_main_queue(), ^(CFDictionaryRef nowPlayingInfo) {
     if (self.currentPlayingInfo) [self.currentPlayingInfo release];
     self.currentPlayingInfo = [(__bridge NSDictionary *)nowPlayingInfo copy];
   });
 
-  NSURL *url = [NSURL fileURLWithPath:LOG_PATH];
-  [self.currentPlayingInfo writeToURL:url error:nil];
+  [[NSFileManager defaultManager] createDirectoryAtPath:NOWPLAYINGINFO_DIR withIntermediateDirectories:YES attributes:nil error:nil];
+  [self.currentPlayingInfo writeToURL:[NSURL fileURLWithPath:LATEST_PLAYED] error:nil];
+  [prefs release];
 }
 
 %end
@@ -40,9 +49,6 @@
   [messagingCenter registerForMessageName:@"nowPlayingInfo" target:self selector:@selector(nowPlayingInfo)];
   [messagingCenter registerForMessageName:@"nowPlayingApplication" target:self selector:@selector(nowPlayingApplication)];
   [messagingCenter registerForMessageName:@"isPlaying" target:self selector:@selector(isPlaying)];
-
-  NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preference/com.khronos31.nowplayinginfo.plist"];
-  if (!prefs) prefs = [[NSMutableDictionary alloc] init];
 }
 
 %new

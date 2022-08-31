@@ -9,7 +9,6 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = NowPlayingInfo
 $(TWEAK_NAME)_FILES = Tweak.xm
 $(TWEAK_NAME)_LDFLAGS = -lrocketbootstrap
-$(TWEAK_NAME)_FRAMEWORKS = UIKit
 $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = MediaRemote AppSupport
 
 LIBRARY_NAME = libnowplaying

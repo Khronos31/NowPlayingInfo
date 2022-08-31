@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import <MediaRemote/MediaRemote.h>
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
@@ -48,8 +47,8 @@ static CPDistributedMessagingCenter *messagingCenter;
   return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoAlbum"];
 }
 
-- (UIImage *)artwork {
-  return [UIImage imageWithData:self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkData"]];
+- (NSData *)artwork {
+  return self.nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkData"];
 }
 
 - (NSString *)artworkType {
@@ -88,7 +87,7 @@ CFStringRef nowPlayingAlbum() {
 }
 
 CFDataRef nowPlayingArtwork() {
-  NSData *npArtwork = [NowPlayingInfo sharedInstance].nowPlayingInfo[@"kMRMediaRemoteNowPlayingInfoArtworkData"];
+  NSData *npArtwork = [NowPlayingInfo sharedInstance].artwork;
   return (CFDataRef)CFBridgingRetain(npArtwork);
 }
 

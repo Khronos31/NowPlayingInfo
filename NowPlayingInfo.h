@@ -16,7 +16,7 @@
 - (NSString *)title;
 - (NSString *)artist;
 - (NSString *)album;
-- (UIImage *)artwork;
+- (NSData *)artwork;
 - (NSString *)artworkType;
 @end
 

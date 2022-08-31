@@ -13,7 +13,7 @@ $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = MediaRemote AppSupport
 
 LIBRARY_NAME = libnowplaying
 $(LIBRARY_NAME)_FILES = Library.m
-$(LIBRARY_NAME)_CFLAGS = -objc-arc
+$(LIBRARY_NAME)_CFLAGS = -fobjc-arc
 $(LIBRARY_NAME)_LDFLAGS = -lrocketbootstrap
 $(LIBRARY_NAME)_PRIVATE_FRAMEWORKS = MediaRemote AppSupport
 $(LIBRARY_NAME)_INSTALL_PATH = /usr/local/lib

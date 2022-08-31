@@ -43,7 +43,7 @@
 - (void)applicationDidFinishLaunching:(id)application {
   %orig;
 
-  CPDistributedMessagingCenter *messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
+  CPDistributedMessagingCenter *messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplaying"];
   rocketbootstrap_distributedmessagingcenter_apply(messagingCenter);
   [messagingCenter runServerOnCurrentThread];
   [messagingCenter registerForMessageName:@"nowPlayingInfo" target:self selector:@selector(nowPlayingInfo)];

@@ -13,7 +13,7 @@ static CPDistributedMessagingCenter *messagingCenter;
   static dispatch_once_t once;
   dispatch_once(&once, ^{
     sharedInstance = [[self alloc] init];
-    messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplayinginfo"];
+    messagingCenter = [CPDistributedMessagingCenter centerNamed:@"com.khronos31.nowplaying"];
     rocketbootstrap_distributedmessagingcenter_apply(messagingCenter);
   });
   return sharedInstance;

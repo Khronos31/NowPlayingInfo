@@ -6,7 +6,6 @@
 #ifdef __OBJC__
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
 @interface NowPlayingInfo: NSObject
 + (NowPlayingInfo *)sharedInstance;

@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import <MediaRemote/MediaRemote.h>
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 #import "NowPlayingInfo.h"

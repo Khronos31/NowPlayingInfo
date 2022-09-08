@@ -17,7 +17,7 @@ int main(int argc, char *argv[], char *envp[]) {
         @"Artist    : %@\n"
         @"Album     : %@\n"
         @"PlayingApp: %@\n",
-        title, album, artist, playingApp
+        title, artist, album, playingApp
     ];
     [stdOut writeData:[outputText dataUsingEncoding:NSUTF8StringEncoding]];
     return 0;

@@ -1,8 +1,6 @@
 #ifndef NOWPLAYINGINFO_H
 #define NOWPLAYINGINFO_H
 
-#import <CoreFoundation/CoreFoundation.h>
-
 #ifdef __OBJC__
 
 #import <Foundation/Foundation.h>
@@ -20,6 +18,8 @@
 @end
 
 #endif /* __OBJC__ */
+
+#import <CoreFoundation/CoreFoundation.h>
 
 bool isPlaying();
 CFDictionaryRef nowPlayingInfo();

@@ -16,17 +16,17 @@ $(LIBRARY_NAME)_FILES = Library.m
 $(LIBRARY_NAME)_CFLAGS = -fobjc-arc
 $(LIBRARY_NAME)_LDFLAGS = -lrocketbootstrap
 $(LIBRARY_NAME)_PRIVATE_FRAMEWORKS = AppSupport
-$(LIBRARY_NAME)_INSTALL_PATH = /usr/local/lib
+$(LIBRARY_NAME)_INSTALL_PATH = /usr/lib
 
 TOOL_NAME = nowplaying
 $(TOOL_NAME)_FILES = main.m
-$(TOOL_NAME)_LDFLAGS = -lnowplaying
-$(TOOL_NAME)_INSTALL_PATH = /usr/local/bin
+$(TOOL_NAME)_LDFLAGS = -L$(THEOS_OBJ_DIR) -lnowplaying
+$(TOOL_NAME)_INSTALL_PATH = /usr/bin
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 include $(THEOS_MAKE_PATH)/library.mk
 include $(THEOS_MAKE_PATH)/tool.mk
 
 before-package::
-	@mkdir -p $(THEOS_STAGING_DIR)/usr/local/include
-	@cp $(THEOS_BUILD_DIR)/NowPlayingInfo.h $(THEOS_STAGING_DIR)/usr/local/include
+	@mkdir -p $(THEOS_STAGING_DIR)/usr/include
+	@cp $(THEOS_BUILD_DIR)/NowPlayingInfo.h $(THEOS_STAGING_DIR)/usr/include

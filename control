@@ -1,6 +1,6 @@
 Package: com.khronos31.nowplaying
 Name: NowPlayingInfo
-Version: 1.1.1
+Version: 1.2.0
 Architecture: iphoneos-arm
 Description: Get NowPlaying information from command line.
 Maintainer: Khronos31
